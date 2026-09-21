@@ -6,5 +6,6 @@ venv/
 __pycache__/
 *.pyc
 
-# env
+# env (commit .env.example)
 .env
+.env.local
