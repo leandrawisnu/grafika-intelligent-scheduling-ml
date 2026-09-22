@@ -1,0 +1,19 @@
+[project]
+name = "grafika-intelligent-scheduling-ml"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Leandra", email = "andrawisnu60@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "uvicorn>=0.53.0",
+]
+
+[project.scripts]
+grafika-intelligent-scheduling-ml = "grafika_intelligent_scheduling_ml:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
