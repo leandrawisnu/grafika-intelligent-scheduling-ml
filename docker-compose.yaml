@@ -1,0 +1,34 @@
+# Standalone ML service (dev / uji repo ini saja).
+# Full stack VM: gunakan ../docker-compose.yaml dari folder GIS/
+#
+# Usage:
+#   cp .env.example .env
+#   docker compose up -d --build
+#   curl http://127.0.0.1:8000/health
+
+name: gis-ml
+
+services:
+  ml:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gis-ml-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY in .env}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      BACKEND_URL: ${BACKEND_URL:-http://host.docker.internal:8080}
+      TZ: ${TZ:-Asia/Jakarta}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:${ML_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
