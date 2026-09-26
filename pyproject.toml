@@ -8,7 +8,12 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "uvicorn>=0.53.0",
+    "fastapi>=0.141.1",
+    "httpx>=0.28.1",
+    "langchain>=0.3,<0.4",
+    "langchain-openai>=0.2,<0.3",
+    "python-dotenv>=1.2.3",
+    "uvicorn[standard]>=0.53.0",
 ]
 
 [project.scripts]
