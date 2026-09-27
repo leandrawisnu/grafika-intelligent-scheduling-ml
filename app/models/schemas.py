@@ -73,3 +73,16 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     answer: str
     result_data: Optional[dict] = None
+
+
+class BarisJadwalEkstrak(BaseModel):
+    hari: str = ""
+    jam: str = ""
+    mata_pelajaran: str = ""
+    kelas: str = ""
+    guru: str = ""
+    ruangan: str = ""
+
+
+class EkstrakJadwalResponse(BaseModel):
+    baris: list[BarisJadwalEkstrak]
