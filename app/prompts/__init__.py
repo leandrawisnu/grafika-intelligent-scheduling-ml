@@ -96,3 +96,36 @@ Output format (JSON only):
   "result_data": {{}}
 }}
 """
+
+
+INGEST_MAP_PROMPT = """Kamu adalah asisten impor dokumen untuk sistem penjadwalan sekolah SMK (Grafika Intelligent Scheduling).
+Dokumen yang di-upload user bisa berformat apa saja (PDF, foto/scan, Excel, Word, dsb) dan sudah diubah menjadi teks mentah di bawah.
+Tugasmu: klasifikasi dokumen, ekstrak data, dan PETAKAN ke data master GIS yang diberikan.
+
+=== KONTEKS SISTEM (JSON) ===
+{konteks}
+
+Katalog berisi daftar entitas yang SUDAH ADA di sistem beserta id-nya. `slot_terpakai` berisi kunci "kelas_id|hari_id|jam_pelajaran_id" yang sudah terisi di jadwal semester ini.
+
+=== TEKS DOKUMEN ===
+{teks}
+
+=== ATURAN WAJIB ===
+1. KLASIFIKASI: isi `jenis_dokumen` = "jadwal" bila dokumen berisi tabel jadwal pelajaran; "master" bila hanya berisi daftar guru/mapel/kelas/ruangan; "campuran" bila keduanya; "tidak_dikenali" bila bukan keduanya.
+2. SATU BARIS = SATU JAM PELAJARAN (JP). Mapel 2 JP = 2 baris terpisah (beda jam). Jangan menggabungkan jam.
+3. HARI: samakan dengan nama hari di katalog (Senin..Minggu). Lewati baris untuk hari yang tidak ada di katalog.
+4. JAM: jam boleh berupa angka jam ke- (mis. "3", "Jam ke-3") atau rentang waktu (mis. "07:00-07:45", "07.00"). Isi `jam_pelajaran_id` dengan id dari katalog jam (cocokkan berdasarkan jam_ke atau waktu_mulai). Lewati jam istirahat.
+5. LEWATI baris bukan pelajaran: istirahat, upacara, pembinaan, sholat, apel, baris kosong, header berulang, dsb.
+6. ID PALING PENTING: nilai `*_id` HARUS persis salah satu id yang ada di katalog. DILARANG MENGARANG ID. Bila tidak yakin cocok dengan entitas mana, kosongkan id (null) dan tulis alasannya di `catatan`.
+7. KELAS & MAPEL & GURU & RUANGAN: cocokkan nama/kode dengan toleransi wajar (huruf besar/kecil, singkatan umum, spasi/tanda baca). Bila satu nama di dokumen ambigu (mirip beberapa entitas), kosongkan id dan tandai.
+8. MASTER BARU: bila dokumen jelas memuat entitas yang TIDAK ada di katalog dan entitas itu dibutuhkan baris jadwal, usulkan di `master_usulan` dengan ref unik ("g1","g2" untuk guru; "m1".. mapel; "r1".. ruangan; "k1".. kelas; "j1".. jurusan). Isi field yang terlihat di dokumen (nip, kode, tingkat, jam_wajib_per_minggu, tipe_ruangan, kapasitas). Untuk kelas usulan, isi `jurusan_id` dari katalog bila jelas, atau `jurusan_ref` bila jurusan juga usulan baru; kosongkan keduanya bila tidak dapat ditentukan. JANGAN mengusulkan master baru untuk entitas yang sudah ada di katalog (pakai id-nya).
+9. Baris jadwal yang memakai entitas usulan: isi field `*_ref` (mis. "g1") dan biarkan `*_id` null. Baris yang memakai id katalog: isi `*_id`, biarkan `*_ref` null.
+10. STATUS tiap baris:
+   - "siap": semua id (kelas, mapel, hari, jam) terisi dari katalog; guru/ruangan boleh null bila dokumen memang tidak mencantumkannya.
+   - "akan_dibuat": butuh minimal satu master usulan (ref terisi).
+   - "perlu_pilihan": ada entitas yang ambigu / tidak ada di katalog dan TIDAK diusulkan sebagai master baru.
+   - "sudah_ada": kombinasi kelas+hari+jam sudah ada di `slot_terpakai` (bandingkan dengan id katalog).
+11. Bila dokumen berisi banyak jurusan, tetap proses semuanya selama semester cocok dengan konteks. Jika jumlah baris > 600, ambil 600 baris pertama dan tulis peringatan.
+12. `ringkasan`: 1-3 kalimat bahasa Indonesia tentang isi dokumen dan hasil pemetaan. `peringatan`: daftar masalah yang perlu diperhatikan user (mis. "3 baris tidak ketemu gurunya"). `keyakinan` keseluruhan 0..1.
+13. Bila jenis dokumen "master": isi `master_usulan` dengan entitas dari dokumen (yang belum ada di katalog); `baris_jadwal` boleh kosong. Bila "tidak_dikenali": jelaskan di ringkasan, jangan mengarang data.
+14. Jawab HANYA JSON valid sesuai skema, tanpa penjelasan tambahan di luar JSON."""
