@@ -21,6 +21,10 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY in .env}
       LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
       BACKEND_URL: ${BACKEND_URL:-http://host.docker.internal:8080}
+      LLAMA_CLOUD_API_KEY: ${LLAMA_CLOUD_API_KEY:-}
+      LLAMA_PARSE_TIER: ${LLAMA_PARSE_TIER:-agentic}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      INGEST_MODEL: ${INGEST_MODEL:-google/gemini-2.5-flash}
       TZ: ${TZ:-Asia/Jakarta}
     extra_hosts:
       - "host.docker.internal:host-gateway"
